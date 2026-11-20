@@ -1,0 +1,138 @@
+# The stack on the VPS. Lives at /opt/lead-agent on the server. Secrets come
+# from /opt/lead-agent/.env (template: server/.env.example). Deployed by scripts/deploy.mjs.
+name: lead-agent
+
+services:
+  caddy:
+    image: caddy:2.11.4
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - N8N_HOSTNAME=${N8N_HOSTNAME}
+      - ACME_EMAIL=${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - n8n
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.26.4
+    restart: unless-stopped
+    # The editor is only reachable through an SSH tunnel:
+    #   ssh -L 5678:127.0.0.1:5678 user@server   then open http://localhost:5678
+    # Caddy publishes /webhook/* to the internet; nothing else.
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOSTNAME}
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://${N8N_HOSTNAME}/
+      - N8N_EDITOR_BASE_URL=http://localhost:5678/
+      - N8N_SECURE_COOKIE=false
+      - N8N_PROXY_HOPS=1
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - GENERIC_TIMEZONE=Africa/Johannesburg
+      - TZ=Africa/Johannesburg
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      # The Code nodes read their configuration through $env and send mail with nodemailer.
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - NODE_FUNCTION_ALLOW_EXTERNAL=nodemailer
+      # https: Meta's Graph API and file bytes to Supabase Storage (see n8n/code/io.js).
+      # fs: reading forms/ to send them on WhatsApp. crypto: checking Meta's webhook signature.
+      - NODE_FUNCTION_ALLOW_BUILTIN=https,fs,crypto
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=720
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - AGENT_MODEL=${AGENT_MODEL:-claude-haiku-5-5}
+      - AGENT_AUTO_SEND=${AGENT_AUTO_SEND:-false}
+      - AGENT_ESCALATION_EMAIL=${AGENT_ESCALATION_EMAIL}
+      - AGENT_FORMS_DIR=/home/node/forms
+      - AGENT_DIGEST_EMAIL=${AGENT_DIGEST_EMAIL}
+      - AGENT_BCC_EMAIL=${AGENT_BCC_EMAIL}
+      - AGENT_FORM_NOTIFY_EMAIL=${AGENT_FORM_NOTIFY_EMAIL}
+      - AGENT_OWN_ADDRESSES=${AGENT_OWN_ADDRESSES}
+      - AGENT_MAX_AUTO_REPLIES_24H=${AGENT_MAX_AUTO_REPLIES_24H:-3}
+      - AGENT_URL_ALLOWLIST=${AGENT_URL_ALLOWLIST}
+      - AGENT_FROM=${AGENT_FROM}
+      - AGENT_SMTP_HOST=${AGENT_SMTP_HOST}
+      - AGENT_SMTP_PORT=${AGENT_SMTP_PORT:-587}
+      - AGENT_SMTP_USER=${AGENT_SMTP_USER}
+      - AGENT_SMTP_PASS=${AGENT_SMTP_PASS}
+      # WhatsApp, through Meta's Cloud API.
+      - AGENT_WA_TOKEN=${AGENT_WA_TOKEN}
+      - AGENT_WA_APP_SECRET=${AGENT_WA_APP_SECRET}
+      - AGENT_WA_PHONE_NUMBER_ID=${AGENT_WA_PHONE_NUMBER_ID}
+      # Created by the deploy script; pasted into the Meta app with the webhook URL.
+      - AGENT_WA_VERIFY_TOKEN=${AGENT_WA_VERIFY_TOKEN}
+      - AGENT_WA_AUTO_SEND=${AGENT_WA_AUTO_SEND:-false}
+      - AGENT_WA_MAX_AUTO_REPLIES_24H=${AGENT_WA_MAX_AUTO_REPLIES_24H:-10}
+      - AGENT_WA_TRANSCRIPT_EMAIL=${AGENT_WA_TRANSCRIPT_EMAIL:-}
+      # The approved template for the WhatsApp a caller asks for; empty = off.
+      - AGENT_WA_CALL_TEMPLATE=${AGENT_WA_CALL_TEMPLATE:-}
+      # Checks the calls the voice service hands over (created by the deploy script).
+      - AGENT_VOICE_INTERNAL_KEY=${AGENT_VOICE_INTERNAL_KEY}
+      # Only read once, by the deploy script, to create the IMAP credential.
+      - AGENT_IMAP_HOST=${AGENT_IMAP_HOST}
+      - AGENT_IMAP_PORT=${AGENT_IMAP_PORT:-993}
+      - AGENT_IMAP_USER=${AGENT_IMAP_USER}
+      - AGENT_IMAP_PASS=${AGENT_IMAP_PASS}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      # Blank forms the agent attaches (forms/ in the repo, uploaded by deploy).
+      - ./forms:/home/node/forms:ro
+
+  # Phone calls. Asterisk on the host takes the call from the SIP trunk and streams
+  # its audio here (AudioSocket); this relays it to OpenAI's Realtime model and
+  # hands the transcript to the Lead Voice Calls workflow.
+  # Code: voice/ (uploaded to ./voice-app by deploy).
+  voice:
+    image: node:22.20.0-alpine
+    restart: unless-stopped
+    working_dir: /app
+    command: ["node", "voice/server.mjs"]
+    # A restart (deploy) hands over the transcript of any call in progress.
+    stop_grace_period: 30s
+    # Asterisk runs on the host, so only the host can reach these.
+    ports:
+      - "127.0.0.1:8081:8080"  # HTTP: the dialplan's CURL calls
+      - "127.0.0.1:9093:9093"  # AudioSocket
+    environment:
+      - TZ=Africa/Johannesburg
+      - PORT=8080
+      - AUDIOSOCKET_PORT=9093
+      # Kill switch: false = every call rings the office.
+      - AGENT_VOICE_ENABLED=${AGENT_VOICE_ENABLED:-false}
+      - AGENT_VOICE_TEST_NUMBERS=${AGENT_VOICE_TEST_NUMBERS}
+      - AGENT_OFFICE_NUMBER=${AGENT_OFFICE_NUMBER}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AGENT_VOICE_MODEL=${AGENT_VOICE_MODEL:-gpt-realtime-2.1}
+      - AGENT_VOICE_VOICE=${AGENT_VOICE_VOICE:-marin}
+      - AGENT_VOICE_TRANSCRIBE_MODEL=${AGENT_VOICE_TRANSCRIBE_MODEL:-gpt-transcribe}
+      - AGENT_VOICE_MAX_MINUTES=${AGENT_VOICE_MAX_MINUTES:-15}
+      - AGENT_VOICE_SILENCE_SECONDS=${AGENT_VOICE_SILENCE_SECONDS:-8}
+      # Told to callers who want to send documents.
+      - AGENT_WA_NUMBER=${AGENT_WA_NUMBER}
+      # Set: the agent can WhatsApp callers after the call (send_whatsapp).
+      - AGENT_WA_CALL_TEMPLATE=${AGENT_WA_CALL_TEMPLATE:-}
+      # Shared with the dialplan, and with n8n (both created by the deploy script).
+      - AGENT_ASTERISK_SECRET=${AGENT_ASTERISK_SECRET}
+      - AGENT_VOICE_INTERNAL_KEY=${AGENT_VOICE_INTERNAL_KEY}
+      - AGENT_VOICE_N8N_URL=http://n8n:5678/webhook/voice-call-ended
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - ./voice-app:/app:ro
+    depends_on:
+      - n8n
+
+volumes:
+  caddy_data:
+  caddy_config:
+  n8n_data:

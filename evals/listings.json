@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Unit Type A, Block 1, Milkwood Views",
+    "unit_type": "2 Bed / 1 Bath Sectional Title Apartment",
+    "price_zar": 695000,
+    "vat_inclusive": true,
+    "levies_zar_pm": 320,
+    "occupation_date": null,
+    "sectional_title_scheme": "Milkwood Views",
+    "status": "active",
+    "body": "Two-bedroom, one-bathroom apartment (Unit Type A) in Block 1 of the Milkwood Views sectional title development in Seaview, Port Haven. 46 m2. Price includes VAT, no bond or transfer costs payable. Included: kitchen sink and cupboard. Levy R320/month. Occupation once the block is completed.",
+    "address": "Milkwood Views, Seaview, Port Haven"
+  },
+  {
+    "title": "House Type A, Phase 2, Kingsmead Heights (Plot & Plan)",
+    "unit_type": "2 Bed / 1 Bath Freehold House (Plot & Plan)",
+    "price_zar": 820000,
+    "vat_inclusive": true,
+    "levies_zar_pm": 260,
+    "occupation_date": null,
+    "sectional_title_scheme": null,
+    "status": "active",
+    "body": "Plot-and-plan 2-bedroom, 1-bathroom home (House Type A) in Phase 2 of Kingsmead Heights, Seaview, Port Haven. 45 m2 home on freehold stands of 140 to 240 m2. Price includes VAT, no bond or transfer costs payable. Included: gas hob, kitchen sink and cupboard, built-in bedroom cupboards. HOA levy R260/month; rates about R850/month. Occupation on completion of the build.",
+    "address": "Kingsmead Heights (Plot & Plan development), Seaview, Port Haven"
+  },
+  {
+    "title": "House Type B, Phase 4, Seaview Downs (Plot & Plan)",
+    "unit_type": "2 Bed / 1 Bath Freehold House (Plot & Plan)",
+    "price_zar": 875000,
+    "vat_inclusive": true,
+    "levies_zar_pm": 260,
+    "occupation_date": null,
+    "sectional_title_scheme": null,
+    "status": "active",
+    "body": "Plot-and-plan 2-bedroom, 1-bathroom home (House Type B) in Phase 4 of Seaview Downs, Seaview, Port Haven. 54 m2 home on freehold stands of 150 to 330 m2. Price includes VAT, no bond or transfer costs payable. Included: gas hob, kitchen sink and cupboard, built-in bedroom cupboards. HOA levy R260/month; rates about R850/month. Occupation on completion of the build. Pets per HOA rules.",
+    "address": "Seaview Downs (Plot & Plan development), Seaview, Port Haven"
+  },
+  {
+    "title": "House Type C, Phase 5, The Quay (Plot & Plan)",
+    "unit_type": "2 Bed / 2 Bath Freehold House (Plot & Plan)",
+    "price_zar": 990000,
+    "vat_inclusive": true,
+    "levies_zar_pm": 260,
+    "occupation_date": null,
+    "sectional_title_scheme": null,
+    "status": "active",
+    "body": "Plot-and-plan 2-bedroom, 2-bathroom home (House Type C) in Phase 5 of The Quay, Riverbend, Port Haven. 60 m2 home on freehold stands of 150 to 180 m2. Price includes VAT, no bond or transfer costs payable. Included: built-in cupboards, gas hob, enclosed backyard, driveway paving. HOA levy R260/month; rates about R1 050/month. Occupation on completion of the build. Pets allowed within HOA rules.",
+    "address": "The Quay (Plot & Plan development), Riverbend, Port Haven"
+  }
+]

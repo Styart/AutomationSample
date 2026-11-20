@@ -1,0 +1,173 @@
+{
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "buyer",
+        "tenant",
+        "seller",
+        "landlord",
+        "valuation",
+        "bond",
+        "existing_client",
+        "general",
+        "opt_out",
+        "spam",
+        "escalate"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "af",
+        "other"
+      ]
+    },
+    "extracted": {
+      "type": "object",
+      "properties": {
+        "first_name": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "last_name": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "phone": {
+          "description": "A phone number they gave in their message, or null.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "email": {
+          "description": "An email address they gave in their message (not just the one they wrote from), or null.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "areas": { "type": "array", "items": { "type": "string" } },
+        "property_types": { "type": "array", "items": { "type": "string" } },
+        "bedrooms": { "anyOf": [{ "type": "integer" }, { "type": "null" }] },
+        "budget_max_zar": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+        "rent_budget_zar_pm": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+        "buyer_profile": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "finance": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "timeline": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "move_in_date": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "household_size": { "anyOf": [{ "type": "integer" }, { "type": "null" }] },
+        "pets": { "anyOf": [{ "type": "boolean" }, { "type": "null" }] },
+        "property_address": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "listing_of_interest": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "preferred_viewing_time": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+        "notes": {
+          "type": "string",
+          "description": "Anything else useful for the team, or an empty string."
+        },
+        "listing_alerts": {
+          "type": "boolean",
+          "description": "True only if they clearly said yes to us letting them know when a matching listing comes up."
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "areas",
+        "property_types",
+        "bedrooms",
+        "budget_max_zar",
+        "rent_budget_zar_pm",
+        "buyer_profile",
+        "finance",
+        "timeline",
+        "move_in_date",
+        "household_size",
+        "pets",
+        "property_address",
+        "listing_of_interest",
+        "preferred_viewing_time",
+        "notes",
+        "listing_alerts"
+      ],
+      "additionalProperties": false
+    },
+    "missing_info": { "type": "array", "items": { "type": "string" } },
+    "reply": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "whatsapp": {
+          "type": "string",
+          "description": "Phone calls only: the details for the WhatsApp the caller asked for. Otherwise empty."
+        }
+      },
+      "required": [
+        "subject",
+        "body",
+        "whatsapp"
+      ],
+      "additionalProperties": false
+    },
+    "attach": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "prequal_form"
+        ]
+      }
+    },
+    "escalate": {
+      "type": "object",
+      "properties": {
+        "needed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "needed",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "category",
+    "language",
+    "extracted",
+    "missing_info",
+    "reply",
+    "attach",
+    "escalate",
+    "confidence",
+    "summary"
+  ],
+  "additionalProperties": false
+}

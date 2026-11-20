@@ -1,0 +1,20 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$N8N_HOSTNAME} {
+	# Public: production webhooks only (website form, WhatsApp). The n8n editor
+	# and API stay private and are reached through an SSH tunnel.
+	# The voice service hands finished calls to n8n over the Docker network only.
+	@internal path /webhook/voice-call-ended
+	handle @internal {
+		respond "Not found" 404
+	}
+	@webhooks path /webhook/*
+	handle @webhooks {
+		reverse_proxy n8n:5678
+	}
+	handle {
+		respond "Not found" 404
+	}
+}
